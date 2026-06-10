@@ -126,11 +126,8 @@ def _extract_suggestions(ai_text: str) -> list[str]:
     suggestions: list[str] = []
 
     for line in ai_text.splitlines():
-        cleaned_line = line.strip()
-        if cleaned_line.startswith("-"):
-            suggestions.append(cleaned_line.removeprefix("-").strip())
+        cleaned = line.strip()
+        if cleaned.startswith(("-", "•", "*", "1.", "2.", "3.")):
+            suggestions.append(cleaned.lstrip("-•*123. ").strip())
 
-    if suggestions:
-        return suggestions
-
-    return [ai_text.strip()]
+    return suggestions if suggestions else ["See full analysis above."]

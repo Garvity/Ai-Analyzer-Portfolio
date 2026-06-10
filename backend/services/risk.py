@@ -79,6 +79,30 @@ def calculate_diversification_score(holdings: list[dict[str, Any]]) -> int:
     return 2
 
 
+def calculate_sector_score(holdings: list[dict[str, Any]]) -> int:
+    """
+    Score sector concentration risk from 1 to 10.
+
+    Missing sector data gets a neutral score instead of being treated as risky.
+    """
+    sectors = [holding.get("sector") for holding in holdings if holding.get("sector")]
+
+    if not sectors:
+        return 5
+
+    unique_sector_count = len(set(sectors))
+
+    if unique_sector_count <= 1:
+        return 10
+    if unique_sector_count <= 2:
+        return 8
+    if unique_sector_count <= 3:
+        return 6
+    if unique_sector_count <= 4:
+        return 4
+    return 2
+
+
 def calculate_loss_score(holdings: list[dict[str, Any]]) -> int:
     """
     Score loss risk from 1 to 10.
@@ -119,24 +143,28 @@ def calculate_risk_score(holdings: list[dict[str, Any]]) -> dict[str, Any]:
         raise RiskCalculationError("At least one holding is required.")
 
     concentration_score = calculate_concentration_score(holdings)
+    sector_score = calculate_sector_score(holdings)
     diversification_score = calculate_diversification_score(holdings)
     loss_score = calculate_loss_score(holdings)
 
     overall_score = round(
-        (concentration_score * 0.5)
-        + (diversification_score * 0.3)
-        + (loss_score * 0.2)
+        (concentration_score * 0.40)
+        + (sector_score * 0.25)
+        + (diversification_score * 0.20)
+        + (loss_score * 0.15)
     )
 
     return {
         "risk_score": min(max(overall_score, 1), 10),
         "breakdown": {
             "concentration": concentration_score,
+            "sector": sector_score,
             "diversification": diversification_score,
             "loss": loss_score,
         },
         "summary": _build_risk_summary(
             concentration_score,
+            sector_score,
             diversification_score,
             loss_score,
         ),
@@ -145,6 +173,7 @@ def calculate_risk_score(holdings: list[dict[str, Any]]) -> dict[str, Any]:
 
 def _build_risk_summary(
     concentration_score: int,
+    sector_score: int,
     diversification_score: int,
     loss_score: int,
 ) -> list[str]:
@@ -155,6 +184,13 @@ def _build_risk_summary(
         summary.append("One stock has a large allocation, increasing concentration risk.")
     else:
         summary.append("No single stock dominates the portfolio.")
+
+    if sector_score >= 8:
+        summary.append("The portfolio is concentrated in very few sectors.")
+    elif sector_score == 5:
+        summary.append("Sector data is unavailable, so sector risk is treated as neutral.")
+    else:
+        summary.append("Sector diversification is reasonably balanced.")
 
     if diversification_score >= 6:
         summary.append("The portfolio has few stocks, so diversification is limited.")

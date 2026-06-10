@@ -15,6 +15,13 @@ class Holding(BaseModel):
     current_price: float | None = Field(default=None, ge=0)
     current_value: float | None = Field(default=None, ge=0)
     profit_loss: float | None = None
+    profit_loss_percent: float | None = None
+    weight_percent: float | None = None
+    sector: str | None = None
+    beta: float | None = None
+    long_name: str | None = None
+    fifty_two_week_high: float | None = None
+    fifty_two_week_low: float | None = None
 
 
 class PortfolioUploadResponse(BaseModel):
@@ -35,6 +42,7 @@ class RiskBreakdown(BaseModel):
     """Detailed risk metric scores."""
 
     concentration: int = Field(ge=1, le=10)
+    sector: int = Field(ge=1, le=10)
     diversification: int = Field(ge=1, le=10)
     loss: int = Field(ge=1, le=10)
 

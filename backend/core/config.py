@@ -8,7 +8,7 @@ class Settings(BaseSettings):
 
     app_name: str = "AI Portfolio Analyzer"
     gemini_api_key: str | None = None
-    database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5432/portfolio_db"
+    database_url: str = "postgresql+psycopg://garv:Postgres1@localhost:5432/myapp"
     allowed_origins: list[str] = [
         "http://localhost:5173",
         "http://localhost:3000",
