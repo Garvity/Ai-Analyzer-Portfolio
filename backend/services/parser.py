@@ -111,7 +111,9 @@ def parse_portfolio_csv(
         buy_price = float(row["buy_price"])
         invested_value = quantity * buy_price
         stock_data = fetch_stock_data(ticker) if fetch_prices else {}
-        current_price = stock_data.get("current_price") or buy_price
+        current_price = stock_data.get("current_price")
+        if current_price is None:
+            current_price = buy_price
         current_value = quantity * current_price if current_price is not None else None
         profit_loss = (
             current_value - invested_value if current_value is not None else None
