@@ -12,19 +12,64 @@ The user uploads a CSV portfolio. The backend parses holdings, calculates portfo
 - Database: PostgreSQL + SQLAlchemy
 - AI: Gemini API + LangChain
 - Market Data: yfinance
-- Frontend: React
-- Deployment Target: Render
+- Frontend: React + TypeScript + Vite
+- Styling: TailwindCSS
+- Charts: Recharts
+- HTTP Client: Axios
+- Routing: React Router
+- Markdown Rendering: React Markdown
+- Deployment Target: Render / Railway
 
-## Current Backend Features
+## Current Features
 
 - CSV upload and validation
 - Portfolio parsing with current value and profit/loss calculation
+- Enriched holding data including sector, beta, 52-week high/low, and portfolio weight
 - Risk scoring
 - Gemini analysis service
 - PostgreSQL models for portfolios and analyses
 - Portfolio API routes
 - Analysis history API routes
 - Docker Compose setup for local PostgreSQL
+- React upload flow
+- Dashboard summary cards, holdings table, allocation pie chart, and P&L bar chart
+- Risk score display with metric breakdown
+- AI analysis screen with markdown rendering
+- History screen for past analyses
+
+## Project Structure
+
+```text
+backend/
+  api/routes/
+    history.py
+    portfolio.py
+  core/
+    config.py
+    database.py
+    models.py
+  schemas/
+    portfolio.py
+  services/
+    analyzer.py
+    parser.py
+    risk.py
+  main.py
+  requirements.txt
+
+frontend/
+  src/
+    api/client.ts
+    components/
+      Analysis.tsx
+      Dashboard.tsx
+      History.tsx
+      RiskScore.tsx
+      Upload.tsx
+    types/portfolio.ts
+    App.tsx
+    index.css
+```
 
 ## CSV Format
 
@@ -75,6 +120,47 @@ Open API docs:
 ```text
 http://localhost:8000/docs
 ```
+
+## Frontend Setup
+
+Install frontend dependencies:
+
+```bash
+cd frontend
+npm install
+```
+
+Create `frontend/.env` if your backend is not running on the default URL:
+
+```env
+VITE_API_BASE_URL=http://localhost:8000
+```
+
+Run the React frontend:
+
+```bash
+npm run dev
+```
+
+Open the app:
+
+```text
+http://localhost:5173
+```
+
+Build the frontend:
+
+```bash
+npm run build
+```
+
+## Frontend User Flow
+
+1. Upload a CSV portfolio on the upload screen.
+2. Review holdings, allocation, current value, and P&L on the dashboard.
+3. Click `Analyze Portfolio`.
+4. View risk score, metric breakdown, AI suggestions, and full markdown analysis.
+5. Open history to review previous saved analyses.
 
 ## API Endpoints
 
@@ -158,11 +244,37 @@ print(calculate_risk_score(holdings))
 PY
 ```
 
+## Full Local Test Flow
+
+Start PostgreSQL:
+
+```bash
+docker compose up -d
+```
+
+Start the backend:
+
+```bash
+source .venv/bin/activate
+uvicorn backend.main:app --reload
+```
+
+Start the frontend in a second terminal:
+
+```bash
+cd frontend
+npm run dev
+```
+
+Then visit:
+
+```text
+http://localhost:5173
+```
+
 ## Next Build Steps
 
-1. Test the full backend with PostgreSQL running.
-2. Add frontend React app.
-3. Build CSV upload UI.
-4. Build dashboard charts.
-5. Build analysis and history views.
-6. Prepare Railway deployment.
+1. Test the complete upload → dashboard → analyze → history flow.
+2. Add frontend polish after real browser QA.
+3. Add deployment configuration.
+4. Prepare final internship demo script.
