@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+pandas
+yfinance
+pydantic-settings
+sqlalchemy
+psycopg[binary]
+python-dotenv
+langchain
+langchain-google-genai
+python-multipart
