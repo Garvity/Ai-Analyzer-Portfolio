@@ -56,3 +56,29 @@ class PortfolioDetailResponse(BaseModel):
     filename: str
     uploaded_at: datetime
     holdings: list[Holding]
+
+
+class HistoryItem(BaseModel):
+    """One row in the analysis history table."""
+
+    analysis_id: int
+    portfolio_id: int
+    filename: str
+    risk_score: int = Field(ge=1, le=10)
+    created_at: datetime
+
+
+class HistoryDetailResponse(BaseModel):
+    """Full details for one past analysis."""
+
+    analysis_id: int
+    portfolio_id: int
+    filename: str
+    uploaded_at: datetime
+    created_at: datetime
+    holdings: list[Holding]
+    risk_score: int = Field(ge=1, le=10)
+    risk_breakdown: RiskBreakdown | None = None
+    risk_summary: list[str] = []
+    suggestions: list[str]
+    raw_ai_text: str
