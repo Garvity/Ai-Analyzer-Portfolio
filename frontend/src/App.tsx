@@ -19,9 +19,7 @@ import type {
   PortfolioUploadResponse,
 } from './types/portfolio'
 
-type AppPage = 'upload' | 'dashboard' | 'analysis' | 'history'
-
-const pageOrder: AppPage[] = ['upload', 'dashboard', 'analysis', 'history']
+type AppTab = 'dashboard' | 'analysis' | 'history'
 
 const AppRoutes: React.FC = () => {
   const navigate = useNavigate()
@@ -33,7 +31,7 @@ const AppRoutes: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
 
-  const getCurrentPage = (): AppPage => {
+  const getCurrentTab = (): AppTab | null => {
     const path = location.pathname
 
     if (path.startsWith('/dashboard')) {
@@ -48,51 +46,38 @@ const AppRoutes: React.FC = () => {
       return 'history'
     }
 
-    return 'upload'
+    return null
   }
 
-  const canVisitPage = (page: AppPage): boolean => {
-    if (page === 'upload' || page === 'history') {
+  const canVisitTab = (tab: AppTab): boolean => {
+    if (tab === 'history') {
       return true
     }
 
-    if (page === 'dashboard') {
+    if (tab === 'dashboard') {
       return holdings.length > 0
     }
 
     return analysis !== null
   }
 
-  const navigateToPage = (page: AppPage): void => {
-    const pathByPage: Record<AppPage, string> = {
-      upload: '/',
+  const navigateToTab = (tab: AppTab): void => {
+    const pathByTab: Record<AppTab, string> = {
       dashboard: '/dashboard',
       analysis: '/analysis',
       history: '/history',
     }
 
-    if (canVisitPage(page)) {
-      navigate(pathByPage[page])
+    if (canVisitTab(tab)) {
+      navigate(pathByTab[tab])
       return
     }
 
     setError(
-      page === 'analysis'
+      tab === 'analysis'
         ? 'Run analysis before opening the analysis page.'
         : 'Upload a portfolio before opening the dashboard.',
     )
-  }
-
-  const handlePreviousPage = (): void => {
-    const currentIndex = pageOrder.indexOf(getCurrentPage())
-    const previousPage = pageOrder[Math.max(currentIndex - 1, 0)]
-    navigateToPage(previousPage)
-  }
-
-  const handleNextPage = (): void => {
-    const currentIndex = pageOrder.indexOf(getCurrentPage())
-    const nextPage = pageOrder[Math.min(currentIndex + 1, pageOrder.length - 1)]
-    navigateToPage(nextPage)
   }
 
   const handleUploadSuccess = (response: PortfolioUploadResponse): void => {
@@ -138,11 +123,13 @@ const AppRoutes: React.FC = () => {
 
   return (
     <>
-      <PageNavigation
-        currentPage={getCurrentPage()}
-        onPrevious={handlePreviousPage}
-        onNext={handleNextPage}
-      />
+      {holdings.length > 0 ? (
+        <AppTabs
+          activeTab={getCurrentTab()}
+          hasAnalysis={analysis !== null}
+          onNavigate={navigateToTab}
+        />
+      ) : null}
 
       {loading ? <LoadingOverlay message="Fetching AI analysis..." /> : null}
 
@@ -195,40 +182,55 @@ const AppRoutes: React.FC = () => {
   )
 }
 
-interface PageNavigationProps {
-  currentPage: AppPage
-  onPrevious: () => void
-  onNext: () => void
+interface AppTabsProps {
+  activeTab: AppTab | null
+  hasAnalysis: boolean
+  onNavigate: (tab: AppTab) => void
 }
 
-const PageNavigation: React.FC<PageNavigationProps> = ({
-  currentPage,
-  onPrevious,
-  onNext,
+const AppTabs: React.FC<AppTabsProps> = ({
+  activeTab,
+  hasAnalysis,
+  onNavigate,
 }) => {
-  const currentIndex = pageOrder.indexOf(currentPage)
-
   return (
-    <nav className="fixed bottom-4 left-1/2 z-40 flex -translate-x-1/2 items-center gap-3 rounded-2xl border border-slate-200 bg-white/95 px-4 py-3 text-sm shadow-lg backdrop-blur">
+    <nav className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 px-4 py-3 shadow-sm backdrop-blur">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2">
       <button
         type="button"
-        className="rounded-xl border border-slate-300 px-4 py-2 font-semibold text-slate-800 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
-        disabled={currentIndex === 0}
-        onClick={onPrevious}
+          className={`rounded-xl px-4 py-2 text-sm font-semibold ${
+            activeTab === 'dashboard'
+              ? 'bg-slate-950 text-white'
+              : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+          }`}
+          onClick={() => onNavigate('dashboard')}
       >
-        ← Back
+          Dashboard
       </button>
-      <span className="hidden text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 sm:inline">
-        {currentPage}
-      </span>
       <button
         type="button"
-        className="rounded-xl bg-slate-950 px-4 py-2 font-semibold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
-        disabled={currentIndex === pageOrder.length - 1}
-        onClick={onNext}
+          className={`rounded-xl px-4 py-2 text-sm font-semibold ${
+            activeTab === 'analysis'
+              ? 'bg-slate-950 text-white'
+              : 'bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-50'
+          }`}
+          disabled={!hasAnalysis}
+          onClick={() => onNavigate('analysis')}
       >
-        Next →
+          Analysis
       </button>
+        <button
+          type="button"
+          className={`rounded-xl px-4 py-2 text-sm font-semibold ${
+            activeTab === 'history'
+              ? 'bg-slate-950 text-white'
+              : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+          }`}
+          onClick={() => onNavigate('history')}
+        >
+          Past AI Analysis
+        </button>
+      </div>
     </nav>
   )
 }
