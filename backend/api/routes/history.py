@@ -65,3 +65,20 @@ def get_history_detail(
         suggestions=analysis.suggestions,
         raw_ai_text=analysis.ai_response,
     )
+
+
+@router.delete("/history/{analysis_id}")
+def delete_history_item(
+    analysis_id: int,
+    db: Session = Depends(get_db),
+) -> dict[str, str]:
+    """Delete one saved AI analysis."""
+    analysis = db.get(Analysis, analysis_id)
+
+    if not analysis:
+        raise HTTPException(status_code=404, detail="Analysis not found.")
+
+    db.delete(analysis)
+    db.commit()
+
+    return {"message": "Analysis deleted successfully."}

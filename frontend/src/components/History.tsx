@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react'
 
-import { getApiErrorMessage, getHistory, getHistoryDetail } from '../api/client'
+import {
+  deleteHistoryItem,
+  getApiErrorMessage,
+  getHistory,
+  getHistoryDetail,
+} from '../api/client'
 import type { HistoryDetailResponse, HistoryItem } from '../types/portfolio'
 import Analysis from './Analysis'
 
@@ -33,6 +38,9 @@ const History: React.FC<HistoryProps> = ({ onBackToUpload }) => {
     useState<HistoryDetailResponse | null>(null)
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [isDetailLoading, setIsDetailLoading] = useState<boolean>(false)
+  const [deletingAnalysisId, setDeletingAnalysisId] = useState<number | null>(
+    null,
+  )
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -64,6 +72,33 @@ const History: React.FC<HistoryProps> = ({ onBackToUpload }) => {
       setError(getApiErrorMessage(detailError))
     } finally {
       setIsDetailLoading(false)
+    }
+  }
+
+  const handleDelete = async (
+    analysisId: number,
+    filename: string,
+  ): Promise<void> => {
+    const confirmed = window.confirm(
+      `Delete the saved AI analysis for "${filename}"? This cannot be undone.`,
+    )
+
+    if (!confirmed) {
+      return
+    }
+
+    setDeletingAnalysisId(analysisId)
+    setError(null)
+
+    try {
+      await deleteHistoryItem(analysisId)
+      setItems((currentItems) =>
+        currentItems.filter((item) => item.analysis_id !== analysisId),
+      )
+    } catch (deleteError: unknown) {
+      setError(getApiErrorMessage(deleteError))
+    } finally {
+      setDeletingAnalysisId(null)
     }
   }
 
@@ -187,16 +222,30 @@ const History: React.FC<HistoryProps> = ({ onBackToUpload }) => {
                         </span>
                       </td>
                       <td className="px-4 py-4 text-right">
+                        <div className="flex justify-end gap-2">
                         <button
                           type="button"
                           className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 disabled:bg-slate-100 disabled:text-slate-400"
-                          disabled={isDetailLoading}
+                          disabled={isDetailLoading || deletingAnalysisId !== null}
                           onClick={() => {
                             void handleViewDetail(item.analysis_id)
                           }}
                         >
                           {isDetailLoading ? 'Loading...' : 'View'}
                         </button>
+                        <button
+                          type="button"
+                          className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 shadow-sm hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 disabled:bg-slate-100 disabled:text-slate-400"
+                          disabled={deletingAnalysisId !== null}
+                          onClick={() => {
+                            void handleDelete(item.analysis_id, item.filename)
+                          }}
+                        >
+                          {deletingAnalysisId === item.analysis_id
+                            ? 'Deleting...'
+                            : 'Delete'}
+                        </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

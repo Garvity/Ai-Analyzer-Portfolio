@@ -13,6 +13,10 @@ interface ApiErrorResponse {
   detail?: string
 }
 
+interface DeleteHistoryResponse {
+  message: string
+}
+
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000',
 })
@@ -70,5 +74,14 @@ export const getHistoryDetail = async (
   analysisId: number,
 ): Promise<HistoryDetailResponse> => {
   const response = await api.get<HistoryDetailResponse>(`/history/${analysisId}`)
+  return response.data
+}
+
+export const deleteHistoryItem = async (
+  analysisId: number,
+): Promise<DeleteHistoryResponse> => {
+  const response = await api.delete<DeleteHistoryResponse>(
+    `/history/${analysisId}`,
+  )
   return response.data
 }
