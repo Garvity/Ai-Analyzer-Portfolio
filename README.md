@@ -13,7 +13,7 @@ The user uploads a CSV portfolio. The backend parses holdings, calculates portfo
 - AI: Gemini API + LangChain
 - Market Data: yfinance
 - Frontend: React
-- Deployment Target: Railway
+- Deployment Target: Render
 
 ## Current Backend Features
 
