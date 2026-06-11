@@ -152,11 +152,16 @@ cd frontend
 npm install
 ```
 
-Create `frontend/.env` if your backend is not running on the default URL:
+Create `frontend/.env` and set the backend API URL. The frontend reads this
+value from Vite config and does not use a hardcoded localhost fallback:
 
 ```env
 VITE_API_BASE_URL=http://localhost:8000
 ```
+
+For deployed environments, set `VITE_API_BASE_URL` to your backend URL before
+building the frontend. Docker builds pass this through with the
+`VITE_API_BASE_URL` build argument.
 
 Run the React frontend:
 
