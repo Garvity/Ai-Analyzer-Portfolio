@@ -121,6 +121,28 @@ Open API docs:
 http://localhost:8000/docs
 ```
 
+## Docker Full-Stack Setup
+
+Run PostgreSQL, FastAPI, and the React frontend together:
+
+```bash
+GEMINI_API_KEY=your_gemini_api_key docker compose up --build
+```
+
+Open:
+
+```text
+Frontend: http://localhost:5173
+Backend API docs: http://localhost:8000/docs
+PostgreSQL: localhost:5432
+```
+
+Services:
+
+- `db`: PostgreSQL database
+- `backend`: FastAPI app on port `8000`
+- `frontend`: React app served by Nginx on port `5173`
+
 ## Frontend Setup
 
 Install frontend dependencies:
