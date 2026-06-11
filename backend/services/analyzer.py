@@ -44,27 +44,30 @@ Provide the response in this format:
 """.strip()
 
 
-def _get_gemini_api_key() -> str:
-    """Load GEMINI_API_KEY from environment variables or backend/.env."""
+def _get_gemini_api_key(api_key: str | None = None) -> str:
+    """Load Gemini API key from the request, environment, or backend/.env."""
+    if api_key and api_key.strip():
+        return api_key.strip()
+
     load_dotenv()
     load_dotenv("backend/.env")
 
-    api_key = os.getenv("GEMINI_API_KEY")
+    environment_api_key = os.getenv("GEMINI_API_KEY")
 
-    if not api_key:
+    if not environment_api_key:
         raise AnalyzerError(
-            "GEMINI_API_KEY is missing. Add it to backend/.env before running AI analysis."
+            "Gemini API key is missing. Enter a key on the upload page or add GEMINI_API_KEY to backend/.env before running AI analysis."
         )
 
-    return api_key
+    return environment_api_key
 
 
-def call_gemini(prompt: str) -> str:
+def call_gemini(prompt: str, api_key: str | None = None) -> str:
     """Send the portfolio prompt to Gemini using LangChain."""
-    api_key = _get_gemini_api_key()
+    resolved_api_key = _get_gemini_api_key(api_key)
     model = ChatGoogleGenerativeAI(
         model="gemini-2.5-flash",
-        api_key=api_key,
+        api_key=resolved_api_key,
         temperature=0.2,
     )
     response = model.invoke(prompt)
@@ -79,6 +82,7 @@ def analyze_portfolio(
     holdings: list[dict[str, Any]],
     risk_result: dict[str, Any],
     *,
+    gemini_api_key: str | None = None,
     use_ai: bool = True,
 ) -> dict[str, Any]:
     """
@@ -89,7 +93,7 @@ def analyze_portfolio(
     prompt = build_portfolio_prompt(holdings, risk_result)
 
     if use_ai:
-        ai_text = call_gemini(prompt)
+        ai_text = call_gemini(prompt, gemini_api_key)
     else:
         ai_text = _build_offline_analysis(risk_result)
 

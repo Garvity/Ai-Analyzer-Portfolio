@@ -25,7 +25,7 @@ async def upload_portfolio(
     db: Session = Depends(get_db),
 ) -> PortfolioUploadResponse:
     """Upload a CSV file, parse it, and store the holdings in PostgreSQL."""
-    if not file.filename or not file.filename.endswith(".csv"):
+    if not file.filename or not file.filename.lower().endswith(".csv"):
         raise HTTPException(status_code=400, detail="Please upload a .csv file.")
 
     file_bytes = await file.read()
@@ -60,7 +60,11 @@ def analyze_uploaded_portfolio(
 
     try:
         risk_result = calculate_risk_score(portfolio.raw_data)
-        analysis_result = analyze_portfolio(portfolio.raw_data, risk_result)
+        analysis_result = analyze_portfolio(
+            portfolio.raw_data,
+            risk_result,
+            gemini_api_key=request.gemini_api_key,
+        )
     except RiskCalculationError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
     except AnalyzerError as error:

@@ -122,6 +122,7 @@ const History: React.FC<HistoryProps> = ({ onBackToUpload }) => {
             suggestions: selectedDetail.suggestions,
             raw_ai_text: selectedDetail.raw_ai_text,
           }}
+          onBackToUpload={onBackToUpload}
           onViewHistory={() => setSelectedDetail(null)}
         />
       </div>

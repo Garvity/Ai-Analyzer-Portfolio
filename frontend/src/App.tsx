@@ -16,7 +16,7 @@ import Upload from './components/Upload'
 import type {
   AnalysisResponse,
   Holding,
-  PortfolioUploadResponse,
+  UploadSuccessPayload,
 } from './types/portfolio'
 
 type AppTab = 'dashboard' | 'analysis' | 'history'
@@ -27,6 +27,7 @@ const AppRoutes: React.FC = () => {
   const [portfolioId, setPortfolioId] = useState<number | null>(null)
   const [filename, setFilename] = useState<string | null>(null)
   const [holdings, setHoldings] = useState<Holding[]>([])
+  const [geminiApiKey, setGeminiApiKey] = useState<string | null>(null)
   const [analysis, setAnalysis] = useState<AnalysisResponse | null>(null)
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
@@ -80,10 +81,14 @@ const AppRoutes: React.FC = () => {
     )
   }
 
-  const handleUploadSuccess = (response: PortfolioUploadResponse): void => {
+  const handleUploadSuccess = ({
+    response,
+    geminiApiKey: uploadedGeminiApiKey,
+  }: UploadSuccessPayload): void => {
     setPortfolioId(response.portfolio_id)
     setFilename(response.filename)
     setHoldings(response.holdings)
+    setGeminiApiKey(uploadedGeminiApiKey)
     setAnalysis(null)
     setError(null)
     navigate('/dashboard')
@@ -102,6 +107,7 @@ const AppRoutes: React.FC = () => {
     try {
       const analysisResponse = await analyzePortfolio({
         portfolio_id: portfolioId,
+        gemini_api_key: geminiApiKey,
       })
       setAnalysis(analysisResponse)
       navigate('/analysis')
@@ -116,6 +122,7 @@ const AppRoutes: React.FC = () => {
     setPortfolioId(null)
     setFilename(null)
     setHoldings([])
+    setGeminiApiKey(null)
     setAnalysis(null)
     setError(null)
     navigate('/')
@@ -153,6 +160,7 @@ const AppRoutes: React.FC = () => {
                 filename={filename}
                 isAnalyzing={loading}
                 onAnalyze={handleAnalyze}
+                onBackToUpload={handleBackToUpload}
               />
             ) : (
               <Navigate to="/" replace />
@@ -165,6 +173,7 @@ const AppRoutes: React.FC = () => {
             analysis ? (
               <Analysis
                 analysis={analysis}
+                onBackToUpload={handleBackToUpload}
                 onViewHistory={() => navigate('/history')}
               />
             ) : (

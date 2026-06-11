@@ -212,7 +212,8 @@ Body:
 
 ```json
 {
-  "portfolio_id": 1
+  "portfolio_id": 1,
+  "gemini_api_key": "optional_user_key"
 }
 ```
 

@@ -5,10 +5,15 @@ import RiskScore from './RiskScore'
 
 interface AnalysisProps {
   analysis: AnalysisResponse | null
+  onBackToUpload: () => void
   onViewHistory: () => void
 }
 
-const Analysis: React.FC<AnalysisProps> = ({ analysis, onViewHistory }) => {
+const Analysis: React.FC<AnalysisProps> = ({
+  analysis,
+  onBackToUpload,
+  onViewHistory,
+}) => {
   if (!analysis) {
     return (
       <section className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
@@ -87,7 +92,14 @@ const Analysis: React.FC<AnalysisProps> = ({ analysis, onViewHistory }) => {
           </article>
         </div>
 
-        <div className="flex justify-end">
+        <div className="flex flex-col justify-end gap-3 sm:flex-row">
+          <button
+            type="button"
+            className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-900 shadow-sm hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2"
+            onClick={onBackToUpload}
+          >
+            Upload New Portfolio
+          </button>
           <button
             type="button"
             className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-900 shadow-sm hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2"

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from io import BytesIO, StringIO
 from typing import BinaryIO
 
@@ -8,6 +9,7 @@ import yfinance as yf
 
 
 REQUIRED_COLUMNS = {"ticker", "quantity", "buy_price"}
+logger = logging.getLogger(__name__)
 
 
 class PortfolioParserError(ValueError):
@@ -30,6 +32,7 @@ def _read_csv(file: str | bytes | BinaryIO) -> pd.DataFrame:
 
 def _validate_columns(dataframe: pd.DataFrame) -> None:
     """Ensure the CSV has all columns required by the app."""
+    dataframe.columns = dataframe.columns.str.strip()
     missing_columns = REQUIRED_COLUMNS - set(dataframe.columns)
 
     if missing_columns:
@@ -69,14 +72,19 @@ def _clean_holdings(dataframe: pd.DataFrame) -> pd.DataFrame:
 def fetch_stock_data(ticker: str) -> dict:
     """Fetch market data for one ticker using a single yfinance Ticker object."""
     yahoo_ticker = ticker if "." in ticker else f"{ticker}.NS"
-    stock = yf.Ticker(yahoo_ticker)
-    history = stock.history(period="1d")
 
-    if history.empty:
-        print(f"Warning: No data for {ticker}")
+    try:
+        stock = yf.Ticker(yahoo_ticker)
+        history = stock.history(period="1d")
+
+        if history.empty:
+            logger.warning("No market data returned for ticker %s.", ticker)
+            return {}
+
+        info = stock.info
+    except Exception as error:
+        logger.warning("Could not fetch market data for ticker %s: %s", ticker, error)
         return {}
-
-    info = stock.info
 
     return {
         "current_price": float(history["Close"].iloc[-1]),

@@ -36,6 +36,7 @@ class AnalysisRequest(BaseModel):
     """Request body for analyzing an already uploaded portfolio."""
 
     portfolio_id: int
+    gemini_api_key: str | None = None
 
 
 class RiskBreakdown(BaseModel):

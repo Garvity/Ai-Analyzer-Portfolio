@@ -20,6 +20,7 @@ interface DashboardProps {
   filename: string | null
   isAnalyzing: boolean
   onAnalyze: () => Promise<void>
+  onBackToUpload: () => void
 }
 
 type SortKey =
@@ -134,6 +135,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   filename,
   isAnalyzing,
   onAnalyze,
+  onBackToUpload,
 }) => {
   const [sortKey, setSortKey] = useState<SortKey>('weight_percent')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
@@ -221,16 +223,25 @@ const Dashboard: React.FC<DashboardProps> = ({
               running AI analysis.
             </p>
           </div>
-          <button
-            type="button"
-            className="rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 disabled:bg-slate-400"
-            disabled={isAnalyzing}
-            onClick={() => {
-              void onAnalyze()
-            }}
-          >
-            {isAnalyzing ? 'Analyzing portfolio...' : 'Analyze Portfolio'}
-          </button>
+          <div className="flex flex-col gap-3 sm:flex-row lg:justify-end">
+            <button
+              type="button"
+              className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-900 shadow-sm hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2"
+              onClick={onBackToUpload}
+            >
+              Upload New Portfolio
+            </button>
+            <button
+              type="button"
+              className="rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 disabled:bg-slate-400"
+              disabled={isAnalyzing}
+              onClick={() => {
+                void onAnalyze()
+              }}
+            >
+              {isAnalyzing ? 'Analyzing portfolio...' : 'Analyze Portfolio'}
+            </button>
+          </div>
         </div>
 
         {isAnalyzing ? (

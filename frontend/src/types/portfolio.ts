@@ -21,6 +21,11 @@ export interface PortfolioUploadResponse {
   holdings: Holding[]
 }
 
+export interface UploadSuccessPayload {
+  response: PortfolioUploadResponse
+  geminiApiKey: string | null
+}
+
 export interface PortfolioDetailResponse {
   portfolio_id: number
   filename: string
@@ -30,6 +35,7 @@ export interface PortfolioDetailResponse {
 
 export interface AnalysisRequest {
   portfolio_id: number
+  gemini_api_key?: string | null
 }
 
 export interface RiskBreakdown {

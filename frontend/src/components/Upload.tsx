@@ -2,10 +2,10 @@ import type { ChangeEvent, DragEvent } from 'react'
 import { useRef, useState } from 'react'
 
 import { getApiErrorMessage, uploadPortfolio } from '../api/client'
-import type { PortfolioUploadResponse } from '../types/portfolio'
+import type { UploadSuccessPayload } from '../types/portfolio'
 
 interface UploadProps {
-  onUploadSuccess: (response: PortfolioUploadResponse) => void
+  onUploadSuccess: (payload: UploadSuccessPayload) => void
 }
 
 const isCsvFile = (file: File): boolean => {
@@ -17,6 +17,9 @@ const Upload: React.FC<UploadProps> = ({ onUploadSuccess }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isDragging, setIsDragging] = useState<boolean>(false)
   const [isUploading, setIsUploading] = useState<boolean>(false)
+  const [geminiApiKey, setGeminiApiKey] = useState<string>('')
+  const [isGeminiApiKeyEntered, setIsGeminiApiKeyEntered] =
+    useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
 
   const handleFileSelection = (file: File): void => {
@@ -58,6 +61,17 @@ const Upload: React.FC<UploadProps> = ({ onUploadSuccess }) => {
     }
   }
 
+  const handleGeminiApiKeyChange = (
+    event: ChangeEvent<HTMLInputElement>,
+  ): void => {
+    setGeminiApiKey(event.target.value)
+    setIsGeminiApiKeyEntered(false)
+  }
+
+  const handleGeminiApiKeyEnter = (): void => {
+    setIsGeminiApiKeyEntered(geminiApiKey.trim().length > 0)
+  }
+
   const handleUpload = async (): Promise<void> => {
     if (!selectedFile) {
       setError('Select a CSV file before uploading.')
@@ -69,7 +83,11 @@ const Upload: React.FC<UploadProps> = ({ onUploadSuccess }) => {
 
     try {
       const response = await uploadPortfolio(selectedFile)
-      onUploadSuccess(response)
+      const trimmedApiKey = geminiApiKey.trim()
+      onUploadSuccess({
+        response,
+        geminiApiKey: trimmedApiKey.length > 0 ? trimmedApiKey : null,
+      })
     } catch (uploadError: unknown) {
       setError(getApiErrorMessage(uploadError))
     } finally {
@@ -113,6 +131,43 @@ TCS,5,3500`}
             {error}
           </div>
         ) : null}
+
+        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+          <label
+            htmlFor="gemini-api-key"
+            className="text-sm font-semibold text-slate-950"
+          >
+            Gemini API key
+          </label>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Add your own key to run AI analysis from this session. Leave it
+            blank to use the backend environment variable.
+          </p>
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+            <input
+              id="gemini-api-key"
+              type="password"
+              value={geminiApiKey}
+              placeholder="Paste your Gemini API key"
+              className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-950 shadow-sm outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10"
+              autoComplete="off"
+              onChange={handleGeminiApiKeyChange}
+            />
+            <button
+              type="button"
+              className="rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 disabled:bg-slate-400"
+              disabled={geminiApiKey.trim().length === 0}
+              onClick={handleGeminiApiKeyEnter}
+            >
+              Enter key
+            </button>
+          </div>
+          {isGeminiApiKeyEntered ? (
+            <p className="mt-3 text-sm font-medium text-green-700">
+              Gemini API key entered for this analysis.
+            </p>
+          ) : null}
+        </section>
 
         <div
           className={`rounded-3xl border-2 border-dashed bg-white p-8 text-center shadow-sm transition-colors sm:p-12 ${
